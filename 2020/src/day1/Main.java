@@ -26,7 +26,7 @@ public class Main {
 			
 			int diff = 2020 - number;
 			if(numbers.contains(diff)) {
-				System.out.println("[Part 1] The first number is: " + number + " The second number is: " + diff + " Multiplied: " + (number*diff));
+				System.out.println("[Part 1] Number 1: " + number + " Number 2: " + diff + " Multiplied: " + (number*diff));
 				break;
 			}
 		} 
