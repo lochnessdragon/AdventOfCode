@@ -31,14 +31,14 @@ public class Main {
 		for(List<Integer> phase : trialPhases) {
 			Queue<Integer> input = new LinkedList<Integer>();
 		
-			Queue<Integer> output = new LinkedList<Integer>();
-			output.add(0);
+			Queue<Long> output = new LinkedList<Long>();
+			output.add((long) 0);
 		
 			for(int i = 0; i < 5; i++) {
 				System.out.println("Amplifier: " + (i+1));
 				input.clear();
 				input.add(phase.get(i));
-				input.add(output.poll());
+				input.add(output.poll().intValue());
 			
 				amplifier = new IntCodeComputer(program.get(0));
 				amplifier.setInput(input);
@@ -47,7 +47,7 @@ public class Main {
 			}
 			
 			if(output.peek() > winningNumber) {
-				winningNumber = output.peek();
+				winningNumber = output.peek().intValue();
 			}
 		}
 		
@@ -91,7 +91,7 @@ public class Main {
 					System.out.println("Running computer: " + i);
 					amplifiers.get(i).runUntilOutput();
 					if(amplifiers.get(i).getOutput().peek() != null) {
-						output = amplifiers.get(i).getOutput().poll();
+						output = amplifiers.get(i).getOutput().poll().intValue();
 					}
 				}
 			

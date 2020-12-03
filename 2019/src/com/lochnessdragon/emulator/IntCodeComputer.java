@@ -1,18 +1,18 @@
 package com.lochnessdragon.emulator;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.Scanner;
 
 public class IntCodeComputer {
 	
-	private int[] stack;
+	private MemMap stack;
 	private int programCounter;
+	private long relativeBase;
 	private boolean running;
 	private InputProvider input;
-	private Queue<Integer> output;
+	private Queue<Long> output;
 	private int inputTimes = 0;
 	
 	public void test() {
@@ -25,10 +25,11 @@ public class IntCodeComputer {
 	public IntCodeComputer(String defaultMem) {
 		this.stack = loadStack(defaultMem);
 		this.programCounter = 0;
+		this.relativeBase = 0;
 		this.running = false;
 	}
 	
-	public int[] getStack() {
+	public MemMap getStack() {
 		return this.stack;
 	}
 	
@@ -46,7 +47,13 @@ public class IntCodeComputer {
 		};
 	}
 	
-	public Queue<Integer> getOutput() {
+	public void setRegularInput() {
+		this.input = (index) -> {
+			return getRegularInput();
+		};
+	}
+
+	public Queue<Long> getOutput() {
 		return this.output;
 	}
 	
@@ -55,9 +62,10 @@ public class IntCodeComputer {
 	}
 	
 	public void runCpu() {
-		this.output = new LinkedList<Integer>();
+		this.output = new LinkedList<Long>();
 		
 		this.programCounter = 0;
+		this.relativeBase = 0;
 		this.running = true;
 		
 		int opcode = 0;
@@ -70,7 +78,7 @@ public class IntCodeComputer {
 		
 		while(this.running) {
 			
-			instruction = parseOpcode(stack[programCounter]);
+			instruction = parseOpcode( (int) stack.getValue(programCounter));
 			opcode = instruction[3];
 			modeParam1 = instruction[2];
 			modeParam2 = instruction[1];
@@ -84,8 +92,29 @@ public class IntCodeComputer {
 		}
 	}
 	
-	public int runUntilOutput() {
-		this.output = new LinkedList<Integer>();
+	public void step() {
+		int opcode = 0;
+		int[] instruction = new int[4];
+		
+		int modeParam1 = 0;
+		int modeParam2 = 0;
+		int modeParam3 = 0;
+		int ptr_increase = 0;
+		
+		instruction = parseOpcode( (int) stack.getValue(programCounter));
+		opcode = instruction[3];
+		modeParam1 = instruction[2];
+		modeParam2 = instruction[1];
+		modeParam3 = instruction[0];
+		System.out.println(opcode + ":" + modeParam1);
+		
+		ptr_increase = runOpcode(opcode, modeParam1, modeParam2, modeParam3);
+		
+		programCounter = programCounter + ptr_increase;
+	}
+	
+	public long runUntilOutput() {
+		this.output = new LinkedList<Long>();
 		this.running = true;
 		
 		int opcode = 0;
@@ -97,7 +126,7 @@ public class IntCodeComputer {
 		int ptr_increase = 0;
 		
 		while(this.running && output.isEmpty()) {
-			instruction = parseOpcode(stack[programCounter]);
+			instruction = parseOpcode((int) stack.getValue(programCounter));
 			opcode = instruction[3];
 			modeParam1 = instruction[2];
 			modeParam2 = instruction[1];
@@ -135,69 +164,79 @@ public class IntCodeComputer {
 		int ptr_increase = 0;
 		
 		switch (opcode) {
-		case 1:
-			stack[stack[programCounter + 3]] = add(getValue(stack, programCounter+1, modeParam1), getValue(stack, programCounter+2, modeParam2));
+		case 1: // add
+			stack.setValue(getPtr(programCounter + 3, modeParam3), add(getValue(programCounter+1, modeParam1), getValue(programCounter+2, modeParam2)));
+			//stack[stack[programCounter + 3]] = add(getValue(programCounter+1, modeParam1), getValue(programCounter+2, modeParam2));
 //			System.out.println("Added: " + int1 + " + " + int2 + " = " + result);
 			ptr_increase = 4;
 			break;
 		
-		case 2:
-			stack[stack[programCounter + 3]] = multiply(getValue(stack, programCounter+1, modeParam1), getValue(stack, programCounter+2, modeParam2));
+		case 2: // multiply
+			stack.setValue(getPtr(programCounter + 3, modeParam3), multiply(getValue(programCounter+1, modeParam1), getValue(programCounter+2, modeParam2)));
+			//stack[stack[programCounter + 3]] = multiply(getValue(programCounter+1, modeParam1), getValue(programCounter+2, modeParam2));
 //			System.out.println("Multiplied: " + int1 + " x " + int2 + " = " + result);
 			ptr_increase = 4;
 			break;
 		
-		case 3: // print
+		case 3: // get
 			int value = getInput();
-			
-			stack[stack[programCounter + 1]] = value;
+			stack.setValue(getPtr(programCounter + 1, modeParam1), value);
+			//stack[stack[programCounter + 1]] = value;
 			
 			ptr_increase = 2;
 			break;
 			
 		case 4: // print
-			logOutput(getValue(stack, programCounter + 1, modeParam1));
+			logOutput(getValue(programCounter + 1, modeParam1));
 			ptr_increase = 2;
 			break;
 			
 		case 5: //jump-if-true
 			
-			if(getValue(stack, programCounter + 1, modeParam1) != 0) {
-				programCounter = getValue(stack, programCounter + 2, modeParam2);
+			if(getValue(programCounter + 1, modeParam1) != 0) {
+				programCounter = (int) getValue(programCounter + 2, modeParam2);
 				break;
 			}
 			ptr_increase = 3;
 			break;
 			
 		case 6: // jump if false
-			if(getValue(stack, programCounter + 1, modeParam1) == 0) {
-				programCounter = getValue(stack, programCounter + 2, modeParam2);
+			if(getValue(programCounter + 1, modeParam1) == 0) {
+				programCounter = (int) getValue(programCounter + 2, modeParam2);
 				break;
 			}
 			ptr_increase = 3;
 			break;
 			
 		case 7: // less than
-			if(getValue(stack, programCounter + 1, modeParam1) < getValue(stack, programCounter + 2, modeParam2)) {
-				stack[stack[programCounter + 3]] = 1;
+			if(getValue(programCounter + 1, modeParam1) < getValue(programCounter + 2, modeParam2)) {
+				stack.setValue(getPtr(programCounter + 3, modeParam3), 1);
+				//stack[stack[programCounter + 3]] = 1;
 			} else {
-				stack[stack[programCounter + 3]] = 0;
+				stack.setValue(getPtr(programCounter + 3, modeParam3), 0);
+				//stack[stack[programCounter + 3]] = 0;
 			}
 			
 			ptr_increase = 4;
 			break;
 			
 		case 8: // equals
-			if(getValue(stack, programCounter + 1, modeParam1) == getValue(stack, programCounter + 2, modeParam2)) {
-				stack[stack[programCounter + 3]] = 1;
+			if(getValue(programCounter + 1, modeParam1) == getValue(programCounter + 2, modeParam2)) {
+				stack.setValue(getPtr(programCounter + 3, modeParam3), 1);
+				//stack[stack[programCounter + 3]] = 1;
 			} else {
-				stack[stack[programCounter + 3]] = 0;
+				stack.setValue(getPtr(programCounter + 3, modeParam3), 0);
+				//stack[stack[programCounter + 3]] = 0;
 			}
 			
 			ptr_increase = 4;
 			break;
+		case 9: // adjust relative base
+			this.relativeBase += getValue(programCounter + 1, modeParam1);
+			ptr_increase = 2;
+			break;
 			
-		case 99:
+		case 99: // halt
 			//System.out.println("Shutting down!");
 			this.running = false;
 			break;
@@ -209,19 +248,29 @@ public class IntCodeComputer {
 		return ptr_increase;
 	}
 
-	private int add(int a, int b) {
+	private long add(long a, long b) {
 		return a + b;
 	}
 	
-	private int multiply(int a, int b) {
+	private long multiply(long a, long b) {
 		return a * b;
 	}
 	
-	private int getValue(int[] stack, int ptr, int mode) {
+	private long getValue(int ptr, int mode) {
+		if(mode == 0 || mode == 2) {
+			return this.stack.getValue(getPtr(ptr, mode));
+		} else  {
+			return this.stack.getValue(ptr);
+		}
+	}
+	
+	private long getPtr(int ptr, int mode) {
 		if(mode == 0) {
-			return stack[stack[ptr]];
+			return this.stack.getValue(ptr);
+		} else if (mode == 2) {
+			return this.stack.getValue(ptr) + this.relativeBase;
 		} else {
-			return stack[ptr];
+			return -1;
 		}
 	}
 	
@@ -230,13 +279,22 @@ public class IntCodeComputer {
 		if(!input.isEmpty()) {
 			value = input.poll();
 		} else {
-			Scanner scanner = new Scanner(System.in);
-		
-			System.out.print("Input Int: ");
-			value = scanner.nextInt();
+			value = getRegularInput();
 		}
 		
 		System.out.println("Getting Input: " + value);
+		
+		return value;
+	}
+	
+	private int getRegularInput() {
+		int value = 0;
+		
+		Scanner scanner = new Scanner(System.in);
+		
+		System.out.print("Input Int: ");
+		value = scanner.nextInt();
+		scanner.close();
 		
 		return value;
 	}
@@ -248,21 +306,21 @@ public class IntCodeComputer {
 		return value;
 	}
 	
-	private void logOutput(int value) {
+	private void logOutput(long value) {
 		System.out.println("Output: " + value);
 		this.output.add(value);
 	}
 	
-	public static int[] loadStack(String line) {
+	public static MemMap loadStack(String line) {
 		String[] mem = line.split(",");
-		int[] stack = new int[mem.length];
+		long[] stack = new long[mem.length];
 		
 		for(int i = 0; i < stack.length; i++) {
 //			System.out.println("Position: " + i + " Value: " + Integer.parseInt(mem[i]));
-			stack[i] = Integer.parseInt(mem[i]);
+			stack[i] = Long.parseLong(mem[i]);
 		}
 		
-		return stack;
+		return new MemMap(stack);
 	}
 
 }
