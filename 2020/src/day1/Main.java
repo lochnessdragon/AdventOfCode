@@ -18,6 +18,8 @@ public class Main {
 			numbers.add(Integer.parseInt(line));
 		}
 		
+		lines.forEach((value) -> {System.out.println(value);});
+		
 		// part 1
 		for(Integer number : numbers) {
 			if(number > 2020) {
