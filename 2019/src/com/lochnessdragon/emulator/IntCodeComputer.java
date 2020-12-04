@@ -12,7 +12,8 @@ public class IntCodeComputer {
 	private long relativeBase;
 	private boolean running;
 	private InputProvider input;
-	private Queue<Long> output;
+	private OutputProvider output;
+	private Queue<Long> outputField;
 	private int inputTimes = 0;
 	
 	public void test() {
@@ -27,6 +28,8 @@ public class IntCodeComputer {
 		this.programCounter = 0;
 		this.relativeBase = 0;
 		this.running = false;
+		this.setRegularInput();
+		this.setRegularOutput();
 	}
 	
 	public MemMap getStack() {
@@ -52,9 +55,17 @@ public class IntCodeComputer {
 			return getRegularInput();
 		};
 	}
+	
+	public void setOutput(OutputProvider output) {
+		this.output = output;
+	}
+	
+	public void setRegularOutput() {
+		this.output = (value, list) -> {return this.logOutput(value, list);};
+	}
 
 	public Queue<Long> getOutput() {
-		return this.output;
+		return this.outputField;
 	}
 	
 	public int getInputTimes() {
@@ -62,7 +73,7 @@ public class IntCodeComputer {
 	}
 	
 	public void runCpu() {
-		this.output = new LinkedList<Long>();
+		this.outputField = new LinkedList<Long>();
 		
 		this.programCounter = 0;
 		this.relativeBase = 0;
@@ -114,7 +125,7 @@ public class IntCodeComputer {
 	}
 	
 	public long runUntilOutput() {
-		this.output = new LinkedList<Long>();
+		this.outputField = new LinkedList<Long>();
 		this.running = true;
 		
 		int opcode = 0;
@@ -125,7 +136,7 @@ public class IntCodeComputer {
 		int modeParam3 = 0;
 		int ptr_increase = 0;
 		
-		while(this.running && output.isEmpty()) {
+		while(this.running && outputField.isEmpty()) {
 			instruction = parseOpcode((int) stack.getValue(programCounter));
 			opcode = instruction[3];
 			modeParam1 = instruction[2];
@@ -143,7 +154,7 @@ public class IntCodeComputer {
 			return 0;
 		}
 		
-		return this.output.peek();
+		return this.outputField.peek();
 	}
 	
 	private int[] parseOpcode(int opcode) {
@@ -187,7 +198,7 @@ public class IntCodeComputer {
 			break;
 			
 		case 4: // print
-			logOutput(getValue(programCounter + 1, modeParam1));
+			runOutput(getValue(programCounter + 1, modeParam1));
 			ptr_increase = 2;
 			break;
 			
@@ -306,9 +317,14 @@ public class IntCodeComputer {
 		return value;
 	}
 	
-	private void logOutput(long value) {
+	private void runOutput(long value) {
+		this.outputField = this.output.out(value, this.outputField);
+	}
+	
+	private Queue<Long> logOutput(long value, Queue<Long> log) {
 		System.out.println("Output: " + value);
-		this.output.add(value);
+		log.add(value);
+		return log;
 	}
 	
 	public static MemMap loadStack(String line) {
