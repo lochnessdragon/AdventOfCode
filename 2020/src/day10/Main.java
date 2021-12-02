@@ -1,7 +1,9 @@
 package day10;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import utils.Resource;
@@ -39,39 +41,58 @@ public class Main {
 		// part 2
 		int max = Collections.max(sortedVoltConverters);
 		System.out.println("[Part 2]: Max: " + max);
-		int numberOfPermutations = recurseThroughList(-1, max, sortedVoltConverters); 
+//		int numberOfPermutations = recurseThroughList(-1, max, sortedVoltConverters); 
+		Map<Integer, Long> adapterMap = new HashMap<Integer, Long>();
 		
-		System.out.println("[Part 2]: Number of Permutations: " + numberOfPermutations);
+		for(int adapter : sortedVoltConverters) {
+			// check adapter - 1, adapter - 2, and adapter - 3
+			long permutationTotal = 0;
+			for(int i = 1; i <= 3; i++) {
+				int lowerAdapter = adapter - i;
+				if(lowerAdapter == 0) {
+					permutationTotal += 1;
+				} else {
+					long lowerAdapterPermCount = adapterMap.getOrDefault(lowerAdapter, 0L);
+					permutationTotal += lowerAdapterPermCount;
+				}
+			}
+			
+			adapterMap.put(adapter, permutationTotal);
+		}
+		
+		System.out.println("[Part 2]: Number of Permutations: " + adapterMap.get(max));
+		
+		System.out.println(sortedVoltConverters);
 	}
 
-	private static int recurseThroughList(int index, int max, List<Integer> sortedVoltConverters) {
-		int converter = 0;
-		int total = 0;
-		
-		if(index > -1) {
-			converter = sortedVoltConverters.get(index);
-		}
-		
-		if(converter == max) {
-			return 1;
-		}
-		
-		// get the numbers around the converter
-		for(int i = 1; i < 4; i++) {
-			if((converter + i) > max) {
-				//total -= 1;
-				continue;
-			}
-			if(sortedVoltConverters.contains(converter+i)) {
-				total += recurseThroughList(sortedVoltConverters.indexOf(converter+i), max, sortedVoltConverters); 
-			}
-		}
-		
-//		if(total == 0) {
-//			total -= 1;
+//	private static int recurseThroughList(int index, int max, List<Integer> sortedVoltConverters) {
+//		int converter = 0;
+//		int total = 0;
+//		
+//		if(index > -1) {
+//			converter = sortedVoltConverters.get(index);
 //		}
-				
-		return total;
-	}
+//		
+//		if(converter == max) {
+//			return 1;
+//		}
+//		
+//		// get the numbers around the converter
+//		for(int i = 1; i < 4; i++) {
+//			if((converter + i) > max) {
+//				//total -= 1;
+//				continue;
+//			}
+//			if(sortedVoltConverters.contains(converter+i)) {
+//				total += recurseThroughList(sortedVoltConverters.indexOf(converter+i), max, sortedVoltConverters); 
+//			}
+//		}
+//		
+////		if(total == 0) {
+////			total -= 1;
+////		}
+//				
+//		return total;
+//	}
 
 }
