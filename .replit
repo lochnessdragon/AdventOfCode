@@ -1,2 +1,2 @@
 language = "java10"
-run = "java --version"
+run = "cd 2021 && make && ./run.sh"
