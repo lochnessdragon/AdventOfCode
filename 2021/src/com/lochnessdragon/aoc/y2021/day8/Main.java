@@ -1,12 +1,10 @@
 package com.lochnessdragon.aoc.y2021.day8;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.List;
 
+import com.lochnessdragon.aoc.y2021.utils.StringTranslator;
 import com.lochnessdragon.aoc.y2021.utils.Utils;
 
 public class Main {
@@ -44,33 +42,21 @@ public class Main {
 			// decode the digits 
 			long sum = 0;
 
+			List<String> permutations = Utils.getAllPermutationsOfStr("abcdefg");
+			
 			for(String[] section : sections) {
 				// decode the sections 
 
-				// store a hashmap of mapping charcters to their proper character
-				Map<Character, Character> decoderMap = calculateDecoderMap(section[0]);
-
-				// now convert the output values into the right digits.
-				String[] outDigitsIncorrect = section[1].split(" ");
-
-				// take the earlier hashmap with characters and convert all output characters to the proper characters and then convert those to an integer.
-				List<String> outDigits = new ArrayList<String>();
-				for(String outDigit : outDigitsIncorrect) {
-					outDigit = outDigit.trim();
-
-					char[] arrDigit = outDigit.toCharArray();
-					char[] corrected = new char[arrDigit.length];
-
-					for(int i = 0; i < arrDigit.length; i++) {
-						corrected[i] = decoderMap.get(arrDigit[i]);
-					}
-
-					outDigits.add(new String(corrected));
+				// for every permutation of abcdefg mapping to abcdefg, check if all the values are valid.
+				for(String permutation : permutations) {
+					StringTranslator translator = new StringTranslator(permutation, "abcdefg");
+					
+					
 				}
 
 				// convert digits to numbers
 				String fullNumberStr = "";
-				for(String digit : outDigits) {
+				for(String digit : section) {
 					digit = digit.trim();
 					int number = convertSegmentDisplay(digit);
 					System.out.println(digit + " converted to: " + number);
@@ -87,12 +73,6 @@ public class Main {
 		}
 
   }
-
-	public static Map<Character, Character> calculateDecoderMap(String uSignals) {
-		Map<Character, Character> map = new HashMap<Character, Character>();
-
-		return map;
-	}
 
 	public static int convertSegmentDisplay(String segments) {
 		char[] arr = segments.toCharArray();

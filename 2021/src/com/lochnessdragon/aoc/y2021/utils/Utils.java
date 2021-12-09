@@ -2,6 +2,8 @@ package com.lochnessdragon.aoc.y2021.utils;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Utils {
 	public static String readFile(String filename) {
@@ -20,5 +22,12 @@ public class Utils {
 		}
 		
 		return data;
+	}
+	
+	
+	public static List<String> getAllPermutationsOfStr(String str) {
+		List<String> result = new ArrayList<String>();
+		
+		return result;
 	}
 }
