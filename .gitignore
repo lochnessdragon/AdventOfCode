@@ -2,3 +2,5 @@
 /.recommenders/
 target/
 *.lock
+/bin/
+.breakpoints
