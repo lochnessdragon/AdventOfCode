@@ -1,7 +1,6 @@
 use std::io::BufRead;
 use std::ops::Div;
 use std::{fs, io};
-use math;
 
 
 fn main() {
