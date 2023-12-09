@@ -13,23 +13,20 @@ public class Day1 {
 	private static String fixPart2Str(String line) {
 		String result = "";
 		
-		String tokbuff = "";
+		String tokBuff = "";
 		for (int i = 0; i < line.length(); i++) {
 			char c = line.charAt(i);
 			char potentialNum = (char) (c - '0');
 			if (potentialNum >= 0 && potentialNum <= 9) {
-				// that's a number, output it
+				// that's a number, append to the result buffer
 				result += c;
-//				tokbuff = "";
-				continue;
 			}
 			
-			tokbuff += c;
+			tokBuff += c;
 			
 			for (int j = 0; j < NUM_NAMES.length; j++) {
-				if(tokbuff.endsWith(NUM_NAMES[j])) {
+				if(tokBuff.endsWith(NUM_NAMES[j])) {
 					result += Integer.toString(j);
-//					tokbuff = "";
 					break;
 				}
 			}
