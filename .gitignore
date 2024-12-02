@@ -4,3 +4,9 @@ target/
 *.lock
 /bin/
 .breakpoints
+
+*.exe
+*.exp
+*.lib
+*.sublime-project
+*.sublime-workspace
