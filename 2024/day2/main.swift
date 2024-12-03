@@ -76,6 +76,11 @@ for i in 0..<lines.count {
 				break;
 			}
 		}
+
+		// derivative method
+		// can recover if:
+		// * one (and only one) of the derivatives is a 0 and the list would be safe without it
+		// * one (and only one) of the derivatives goes against the grain (i.e. a positive diff in a mostly negative diff list) and summing it into the next one would fix the list
 	}
 
 	/*var last = parts[0]
