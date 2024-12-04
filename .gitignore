@@ -10,3 +10,6 @@ target/
 *.lib
 *.sublime-project
 *.sublime-workspace
+
+2024/day4/main.py
+2024/day4/expected.txt
