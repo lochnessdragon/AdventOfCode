@@ -21,7 +21,7 @@ for match in contents.matches(of: regex) {
 		let op2 : Int = Int(match[2].substring!)!
 		part_1 += op1 * op2
 		if enabled {
-			part_2 += op1 * op2	
+			part_2 += op1 * op2
 		}
 	}
 }
