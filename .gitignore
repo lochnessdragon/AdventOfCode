@@ -13,3 +13,7 @@ target/
 
 2024/day4/main.py
 2024/day4/expected.txt
+
+# don't attach AOC copyrighted data
+data.txt
+test.txt
