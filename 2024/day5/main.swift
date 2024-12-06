@@ -14,6 +14,7 @@ let sections = contents.components(separatedBy: "\r\n\r\n")
 class DependencyTree {
 	// these are the edges of the tree
 	var dependencies: [(Int, Int)] = []
+	
 	// these are all the edges that are required by the current update list
 	var markedIndices: [Int] = []
 
